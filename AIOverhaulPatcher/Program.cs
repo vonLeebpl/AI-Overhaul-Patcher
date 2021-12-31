@@ -87,13 +87,13 @@ namespace AIOverhaulPatcher
                 bool change = false;
 
                 var patchNpc = state.PatchMod.Npcs.GetOrAddAsOverride(winningOverride);
-                if (npc.IsProtected() && !(patchNpc.IsProtected() || (patchNpc.IsEssential() && _settings.Value.MaintainHighestProtectionLevel)))
+                //if (npc.IsProtected() && !(patchNpc.IsProtected() || (patchNpc.IsEssential() && _settings.Value.MaintainHighestProtectionLevel)))
+                if (npc.IsProtected() && !(patchNpc.IsProtected() || patchNpc.IsEssential()))
                 {
                     patchNpc.Configuration.Flags.SetFlag(NpcConfiguration.Flag.Protected, true);
                     change = true;
-
-
                 }
+
                 foreach (var fac in npc.Factions)
                     if (!patchNpc.Factions.Select(x => new KeyValuePair<FormKey, int>(x.Faction.FormKey, x.Rank)).Contains(new KeyValuePair<FormKey, int>(fac.Faction.FormKey, fac.Rank)))
                     {
