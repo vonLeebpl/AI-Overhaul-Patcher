@@ -87,12 +87,10 @@ namespace AIOverhaulPatcher
                 bool change = false;
 
                 var patchNpc = state.PatchMod.Npcs.GetOrAddAsOverride(winningOverride);
-                //if (npc.IsProtected() && !(patchNpc.IsProtected() || (patchNpc.IsEssential() && _settings.Value.MaintainHighestProtectionLevel)))
-                //if (npc.IsProtected() && !(patchNpc.IsProtected() || patchNpc.IsEssential()))
+
                 if (npc.Configuration.Flags.HasFlag(NpcConfiguration.Flag.Protected))
                 {
-                    patchNpc.Configuration.Flags.SetFlag(NpcConfiguration.Flag.Protected, true);
-                    //npc.Configuration.Flags.HasFlag(NpcConfiguration.Flag.Protected);
+                    patchNpc.Configuration.Flags = patchNpc.Configuration.Flags.SetFlag(NpcConfiguration.Flag.Protected, true);
                     change = true;
                 }
 
@@ -175,9 +173,9 @@ namespace AIOverhaulPatcher
 
                 if (npc.AIData.Confidence != patchNpc.AIData.Confidence)
                 {
-                    patchNpc.AIData.Confidence = (Confidence)Math.Min((int)patchNpc.AIData.Confidence, (int)npc.AIData.Confidence);
+                    // vl: patchNpc.AIData.Confidence = (Confidence)Math.Min((int)patchNpc.AIData.Confidence, (int)npc.AIData.Confidence);
+                    patchNpc.AIData.Confidence = npc.AIData.Confidence;
                     change = true;
-
 
                 }
 
@@ -200,11 +198,59 @@ namespace AIOverhaulPatcher
 
                 }
 
+                // vl added code
+                if (npc.Configuration.Flags.HasFlag(NpcConfiguration.Flag.Essential))
+                {
+                    patchNpc.Configuration.Flags = patchNpc.Configuration.Flags.SetFlag(NpcConfiguration.Flag.Essential, true);
+                    change = true;
+                }
+
+                if (npc.AIData.Aggression != patchNpc.AIData.Aggression)
+                {
+                    patchNpc.AIData.Aggression = npc.AIData.Aggression;
+                    change = true;
+                }
+
+                if (npc.CombatStyle.FormKey != patchNpc.CombatStyle.FormKey && npc.CombatStyle.FormKey != null)
+                {
+                    patchNpc.CombatStyle.FormKey = npc.CombatStyle.FormKey;
+                    change = true;
+                }
+
+                if (npc.PlayerSkills != null)
+                {
+                    patchNpc.PlayerSkills = npc.PlayerSkills.DeepCopy();
+                    change = true;
+                }
+
+                if (npc.Items != null)
+                {
+                    if (patchNpc.Items == null)
+                    {
+                        patchNpc.Items = (ExtendedList<ContainerEntry>?)npc.Items;
+                    }
+                    else
+                    {
+                        foreach (var item in npc.Items)
+                        {
+                            if (patchNpc.Items != null)
+
+                            {
+                                if (!patchNpc.Items.Select(x => x.Item.Item.FormKey).Contains(item.Item.Item.FormKey))
+                                {
+                                    patchNpc.Items.Add(item.DeepCopy());
+                                }
+                            }
+                        }
+                    }
+                }
 
                 if (_settings.Value.IgnoreIdenticalToLastOverride && !change)
                 {
                     state.PatchMod.Npcs.Remove(npc);
                 }
+
+
                 b++;
                 processed++;
             }
